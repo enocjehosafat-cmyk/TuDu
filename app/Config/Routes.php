@@ -10,3 +10,4 @@ $routes->get('/', 'Home::index');
 //$routes->get('tudu/edit/(:num)','tudu::create/$1');
 
 $routes->presenter('tudu');
+$routes->presenter('categoria');

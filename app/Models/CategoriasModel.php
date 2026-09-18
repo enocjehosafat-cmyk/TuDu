@@ -6,5 +6,6 @@ use CodeIgniter\Model;
 
 class CategoriasModel extends Model
 {
-    protected $table            = 'categorias';
+    protected $table = 'categorias';
+    protected $allowedFields = ['titulo'];
 }
