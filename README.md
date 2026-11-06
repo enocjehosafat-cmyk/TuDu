@@ -1,69 +1,58 @@
-# CodeIgniter 4 Application Starter
+# TuDu
 
-## What is CodeIgniter?
+TuDu es una aplicación web multi-tenant de gestión de tareas por empresa, construida con **CodeIgniter 4.7**, **CodeIgniter Shield 1.4** (autenticación), **PHP 8.2+**, **MySQLi** y **PHPUnit 10**.
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+## Modelo de roles
 
-This repository holds a composer-installable app starter.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+Cada usuario pertenece a un grupo de Shield que define su panel:
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
+- **superadmin** → panel `/admin` (empresas, usuarios, roles).
+- **cliente** → panel `/cliente` (empleados de su empresa, tareas y asignaciones).
+- **empleado** → panel `/empleado` (sus asignaciones y checklist).
 
-You can read the [user guide](https://codeigniter.com/user_guide/)
-corresponding to the latest version of the framework.
+Filtros clave: `group:superadmin`, `group:cliente + empresa-activa`, `group:empleado + empresa-activa`.
 
-## Installation & updates
+## Flujo principal
 
-`composer create-project codeigniter4/appstarter` then `composer update` whenever
-there is a new release of the framework.
+```
+Cliente            →  Tarea  →  Asignación  →  Empleado
+                                  ↓
+                              Checklist
+```
 
-When updating, check the release notes to see if there are any changes you might need to apply
-to your `app` folder. The affected files can be copied or merged from
-`vendor/codeigniter4/framework/app`.
+1. Un usuario se registra con verificación por correo; al verificar, se crea su empresa automáticamente y se convierte en **cliente**.
+2. El cliente gestiona a sus **empleados** (CRUD limitado a su empresa).
+3. El cliente crea **tareas** (nombre, descripción, tiempo estimado, icono).
+4. El cliente **asigna** tareas a empleados con fecha, vencimiento, prioridad, notas y un checklist opcional de pasos.
+5. El empleado consulta sus **asignaciones**, marca los pasos del checklist y las completa.
+
+## Estructura
+
+- `app/Controllers/Admin|Cliente|Empleado` — controladores por panel.
+- `app/Models/` — modelos de acceso a datos (devuelven arrays).
+- `app/Services/` — `service('usuario')` (UsuarioService) y `service('rol')` (RolService).
+- `app/Filters/EmpresaActiva.php` — filtro que valida que la empresa del usuario esté activa.
+- `app/Database/Migrations/` — migraciones (`empresas`, `empleados`, `tareas`, `asignaciones_tareas`, `checklist_tareas`, `registros_pendientes`).
+- `app/Views/` — vistas organizadas por panel, con el layout `layouts/app.php` (sidebar dinámico por rol).
+
+## Convenciones
+
+- Variables, métodos y mensajes en español (`empresaId()`, `perfilActual()`, `auth()`).
+- Estatus numérico (1 = activo, 0 = inactivo) en empresas/empleados/tareas; string (`pendiente`/`completada`) en asignaciones.
+- Soft delete (`estatus = 0`) para empresas, empleados y tareas; hard delete para asignaciones y checklists.
+- Transacciones (`db_connect()->transBegin()/transCommit()/transRollback()`) cuando se tocan varias tablas.
 
 ## Setup
 
-Copy `env` to `.env` and tailor for your app, specifically the baseURL
-and any database settings.
+Copiar `env` a `.env` y configurar `app.baseURL` y las credenciales de la base de datos.
 
-## Important Change with index.php
+```shell
+php spark migrate
+php spark db:seed AdminSeeder
+```
 
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
+El servidor web debe apuntar a la carpeta `public/`.
 
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
+## Requisitos del servidor
 
-**Please** read the user guide for a better explanation of how CI4 works!
-
-## Repository Management
-
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
-
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
-
-## Server Requirements
-
-PHP version 8.2 or higher is required, with the following extensions installed:
-
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
-
-> [!WARNING]
-> - The end of life date for PHP 7.4 was November 28, 2022.
-> - The end of life date for PHP 8.0 was November 26, 2023.
-> - The end of life date for PHP 8.1 was December 31, 2025.
-> - If you are still using below PHP 8.2, you should upgrade immediately.
-> - The end of life date for PHP 8.2 will be December 31, 2026.
-
-Additionally, make sure that the following extensions are enabled in your PHP:
-
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+PHP 8.2 o superior, con las extensiones `intl`, `mbstring`, `json`, `mysqlnd` (para MySQL) y `libcurl`.

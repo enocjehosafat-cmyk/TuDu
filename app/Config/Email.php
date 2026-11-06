@@ -6,8 +6,8 @@ use CodeIgniter\Config\BaseConfig;
 
 class Email extends BaseConfig
 {
-    public string $fromEmail  = '';
-    public string $fromName   = '';
+    public string $fromEmail  = 'no-reply@tudu.test';
+    public string $fromName   = 'TuDu';
     public string $recipients = '';
 
     /**
@@ -18,7 +18,7 @@ class Email extends BaseConfig
     /**
      * The mail sending protocol: mail, sendmail, smtp
      */
-    public string $protocol = 'mail';
+    public string $protocol = 'smtp';
 
     /**
      * The server path to Sendmail.
@@ -28,7 +28,7 @@ class Email extends BaseConfig
     /**
      * SMTP Server Hostname
      */
-    public string $SMTPHost = '';
+    public string $SMTPHost = 'smtp.tudu.test';
 
     /**
      * Which SMTP authentication method to use: login, plain
@@ -48,7 +48,7 @@ class Email extends BaseConfig
     /**
      * SMTP Port
      */
-    public int $SMTPPort = 25;
+    public int $SMTPPort = 587;
 
     /**
      * SMTP Timeout (in seconds)
@@ -82,7 +82,7 @@ class Email extends BaseConfig
     /**
      * Type of mail, either 'text' or 'html'
      */
-    public string $mailType = 'text';
+    public string $mailType = 'html';
 
     /**
      * Character set (utf-8, iso-8859-1, etc.)
@@ -123,4 +123,12 @@ class Email extends BaseConfig
      * Enable notify message from server
      */
     public bool $DSN = false;
+
+    /*
+     * La configuración de correo DEBE establecerse en el archivo .env
+     * del entorno correspondiente. No uses credenciales reales en este archivo.
+     * Define email.fromEmail, email.fromName, email.protocol, email.SMTPHost,
+     * email.SMTPUser, email.SMTPPass, email.SMTPPort, email.SMTPCrypto,
+     * email.SMTPTimeout y email.mailType según el servidor de correo.
+     */
 }
