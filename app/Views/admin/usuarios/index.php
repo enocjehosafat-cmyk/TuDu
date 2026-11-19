@@ -4,14 +4,11 @@
     <div class="tareas-encabezado">
         <div>
             <h1>Gestión de usuarios</h1>
-            <p>Crea cuentas, asigna roles y administra el acceso al sistema.</p>
+            <p>Administra los accesos y roles del sistema.</p>
         </div>
-        <a class="crear tareas-boton-crear" href="<?= site_url('admin/usuarios/new') ?>">
-            + Nuevo usuario
-        </a>
     </div>
 
-    <form action="<?= site_url('admin/usuarios') ?>" method="get" style="margin-bottom: 20px; display: flex; gap: 10px;">
+    <form action="<?= site_url('admin/usuarios') ?>" method="get" style="margin-bottom: 20px; display: flex; gap: 10px; width: 100%;">
         <input
             type="search"
             name="q"
@@ -25,7 +22,7 @@
         <?php endif; ?>
     </form>
 
-    <table>
+    <div class="table-responsive"><table>
         <thead>
             <tr>
                 <th>Usuario</th>
@@ -40,16 +37,18 @@
         <tbody>
             <?php foreach ($usuarios as $fila): ?>
                 <tr>
-                    <td><?= esc($fila['username']) ?></td>
-                    <td>
+                    <td data-label="Usuario">
+                        <strong><?= esc($fila['username']) ?></strong>
+                    </td>
+                    <td data-label="Nombre">
                         <?php if (! empty($fila['nombre'])): ?>
                             <?= esc(trim($fila['nombre'] . ' ' . ($fila['apellidos'] ?? ''))) ?>
                         <?php else: ?>
                             <span style="color: #94a3b8;">Sin perfil</span>
                         <?php endif; ?>
                     </td>
-                    <td><?= esc($fila['email'] ?? '—') ?></td>
-                    <td>
+                    <td data-label="Correo"><?= esc($fila['email'] ?? '—') ?></td>
+                    <td data-label="Roles">
                         <?php if ($fila['grupos'] === []): ?>
                             <span class="estado-empleado inactivo">Pendiente</span>
                         <?php else: ?>
@@ -60,16 +59,16 @@
                             <?php endforeach; ?>
                         <?php endif; ?>
                     </td>
-                    <td><?= esc($fila['empresa_nombre'] ?? '—') ?></td>
-                    <td>
+                    <td data-label="Empresa"><?= esc($fila['empresa_nombre'] ?? '—') ?></td>
+                    <td data-label="Estatus">
                         <span class="estado-empleado <?= (int) $fila['active'] === 1 ? 'activo' : 'inactivo' ?>">
                             <?= (int) $fila['active'] === 1 ? 'Activo' : 'Inactivo' ?>
                         </span>
                     </td>
-                    <td class="acciones">
+                    <td data-label="Opciones" class="acciones">
                         <a class="boton-edit" href="<?= site_url('admin/usuarios/edit/' . $fila['id']) ?>">Editar</a>
                         <?php if ((int) $fila['id'] !== (int) auth()->id()): ?>
-                            <form action="<?= site_url('admin/usuarios/delete/' . $fila['id']) ?>" method="post" onsubmit="return confirm('¿Eliminar este usuario?');">
+                            <form action="<?= site_url('admin/usuarios/delete/' . $fila['id']) ?>" method="post" class="form-confirm" data-title="¿Eliminar usuario?" data-message="Esta acción borrará al usuario del sistema." data-icon="warning" data-confirm="Sí, eliminar">
                                 <?= csrf_field() ?>
                                 <button class="boton-delete" type="submit">Eliminar</button>
                             </form>
@@ -84,5 +83,6 @@
                 </tr>
             <?php endif; ?>
         </tbody>
-    </table>
+    </table></div>
 <?= $this->endSection() ?>
+

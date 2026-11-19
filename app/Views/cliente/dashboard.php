@@ -38,7 +38,7 @@
     </div>
 
     <h3>Últimos empleados registrados</h3>
-    <table>
+    <div class="table-responsive"><table>
         <thead>
             <tr>
                 <th>Nombre</th>
@@ -50,10 +50,12 @@
         <tbody>
             <?php foreach ($empleados as $empleado): ?>
                 <tr>
-                    <td><?= esc(trim($empleado['nombre'] . ' ' . $empleado['apellidos'])) ?></td>
-                    <td><?= esc($empleado['username'] ?? '—') ?></td>
-                    <td><?= esc($empleado['email'] ?? '—') ?></td>
-                    <td>
+                    <td data-label="Nombre">
+                        <strong><?= esc(trim($empleado['nombre'] . ' ' . $empleado['apellidos'])) ?></strong>
+                    </td>
+                    <td data-label="Usuario"><?= esc($empleado['username'] ?? '—') ?></td>
+                    <td data-label="Correo"><?= esc($empleado['email'] ?? '—') ?></td>
+                    <td data-label="Estatus">
                         <span class="estado-empleado <?= (int) $empleado['estatus'] === 1 ? 'activo' : 'inactivo' ?>">
                             <?= (int) $empleado['estatus'] === 1 ? 'Activo' : 'Inactivo' ?>
                         </span>
@@ -67,5 +69,5 @@
                 </tr>
             <?php endif; ?>
         </tbody>
-    </table>
+    </table></div>
 <?= $this->endSection() ?>

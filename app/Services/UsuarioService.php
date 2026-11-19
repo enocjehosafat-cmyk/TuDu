@@ -176,14 +176,20 @@ class UsuarioService
 
     public function eliminar(User $usuario): void
     {
+        // Desactivamos el usuario
         $usuario->active = false;
         $this->usuarios->save($usuario);
+        
+        // Quitamos sus roles
         $usuario->syncGroups();
 
+        // ELIMINAMOS su perfil de la tabla empleados (en lugar de solo desactivarlo)
+        // para que no bloquee el borrado de la empresa.
         db_connect()->table('empleados')
             ->where('usuario_id', $usuario->id)
-            ->update(['estatus' => 0]);
+            ->delete(); 
 
+        // Finalmente, borramos al usuario
         $this->usuarios->delete($usuario->id);
     }
 

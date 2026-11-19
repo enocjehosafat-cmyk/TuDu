@@ -26,32 +26,4 @@
         <?php endforeach; ?>
     </div>
 
-    <div class="detalle" style="margin-top: 30px;">
-        <h3>Matriz de permisos</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Permiso</th>
-                    <?php foreach ($roles as $rol): ?>
-                        <th><?= esc($rol['title']) ?></th>
-                    <?php endforeach; ?>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($permissions as $clave => $permiso): ?>
-                    <tr>
-                        <td>
-                            <strong><?= esc($clave) ?></strong><br>
-                            <small><?= esc($permiso['description'] ?? '') ?></small>
-                        </td>
-                        <?php foreach ($roles as $slug => $rol): ?>
-                            <td>
-                                <?= ($matrizVisible[$slug][$clave] ?? false) ? 'Sí' : '—' ?>
-                            </td>
-                        <?php endforeach; ?>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    </div>
 <?= $this->endSection() ?>

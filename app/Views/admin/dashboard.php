@@ -11,7 +11,7 @@
         </a>
     </div>
 
-    <div class="personal-estadisticas">
+    <div class="personal-estadisticas" style="grid-template-columns: repeat(3, 1fr);">
         <div class="estadistica-tarjeta">
             <span>Total de empresas</span>
             <h2><?= esc($totales['empresas']) ?></h2>
@@ -21,18 +21,9 @@
             <h2 class="numero-activos"><?= esc($totales['usuarios']) ?></h2>
         </div>
         <div class="estadistica-tarjeta">
-            <span>Tareas registradas</span>
-            <h2><?= esc($totales['tareas']) ?></h2>
+            <span>Roles del sistema</span>
+            <h2><?= esc($totales['roles']) ?></h2>
         </div>
     </div>
 
-    <div class="detalle">
-        <h3>Acciones rápidas</h3>
-        <p>Administra empresas, usuarios y roles desde un solo lugar.</p>
-        <p>
-            <a class="boton-crear" href="<?= site_url('admin/empresas') ?>">Gestionar empresas</a>
-            <a class="boton-crear" href="<?= site_url('admin/usuarios') ?>" style="margin-left: 10px;">Gestionar usuarios</a>
-            <a class="boton-crear" href="<?= site_url('admin/roles') ?>" style="margin-left: 10px;">Ver roles</a>
-        </p>
-    </div>
 <?= $this->endSection() ?>

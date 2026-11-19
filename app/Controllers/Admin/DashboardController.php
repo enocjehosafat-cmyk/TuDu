@@ -3,9 +3,7 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
-use App\Models\AsignacionTareaModel;
 use App\Models\EmpresaModel;
-use App\Models\TareaModel;
 use App\Models\UsuariosShieldModel;
 
 class DashboardController extends BaseController
@@ -15,10 +13,9 @@ class DashboardController extends BaseController
         $usuarios = new UsuariosShieldModel();
 
         $totales = [
-            'empresas'   => (new EmpresaModel())->countAllResults(),
-            'usuarios'   => $usuarios->where('active', 1)->countAllResults(),
-            'tareas'     => (new TareaModel())->countAllResults(),
-            'asignaciones' => (new AsignacionTareaModel())->countAllResults(),
+            'empresas' => (new EmpresaModel())->countAllResults(),
+            'usuarios' => $usuarios->where('active', 1)->countAllResults(),
+            'roles'    => count(service('rol')->roles()), // Contamos los roles en su lugar
         ];
 
         return view('admin/dashboard', [

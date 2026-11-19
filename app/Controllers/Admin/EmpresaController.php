@@ -108,4 +108,30 @@ class EmpresaController extends BaseController
             'direccion' => 'permit_empty|max_length[255]',
         ]);
     }
+    public function eliminar($id)
+    {
+        $empresaModel = new EmpresaModel();
+        $empresa = $empresaModel->find($id);
+
+        if ($empresa === null) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Empresa no encontrada.');
+        }
+
+        // Validar que no tenga usuarios asignados
+        $usuarios = db_connect()->table('empleados')->where('empresa_id', $id)->countAllResults();
+        if ($usuarios > 0) {
+            return redirect()->to(site_url('admin/empresas'))
+                ->with('error', 'No puedes eliminar esta empresa porque tiene empleados asignados. Desactívala primero o elimina a sus empleados.');
+        }
+
+        $empresaModel->delete($id);
+        service('audit')->log(
+            'eliminar', 
+            'empresa', 
+            (int) $id, 
+            "Eliminó permanentemente la empresa '{$empresa['nombre']}'"
+        );
+        return redirect()->to(site_url('admin/empresas'))
+            ->with('success', 'Empresa eliminada permanentemente del sistema.');
+    }
 }

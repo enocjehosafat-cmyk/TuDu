@@ -34,7 +34,7 @@
         </div>
 
         <h3>Mis asignaciones</h3>
-        <table>
+        <div class="table-responsive"><table>
             <thead>
                 <tr>
                     <th>Tarea</th>
@@ -46,19 +46,27 @@
             </thead>
             <tbody>
                 <?php foreach ($asignaciones as $asignacion): ?>
+                    <?php
+                        $estatus     = $asignacion['estatus'] ?? 'pendiente';
+                        $claseEstado = match ($estatus) {
+                            'completada' => 'activo',
+                            'cancelada'  => 'inactivo',
+                            default      => 'pendiente',
+                        };
+                    ?>
                     <tr>
-                        <td>
+                        <td data-label="Tarea">
                             <strong><?= esc($asignacion['tarea'] ?? 'Tarea eliminada') ?></strong>
                             <?php if (! empty($asignacion['descripcion'])): ?>
                                 <br><small><?= esc($asignacion['descripcion']) ?></small>
                             <?php endif; ?>
                         </td>
-                        <td><?= esc($asignacion['fecha'] ?? '—') ?></td>
-                        <td><?= esc($asignacion['fecha_vencimiento'] ?? '—') ?></td>
-                        <td><?= esc(ucfirst((string) ($asignacion['prioridad'] ?? '—'))) ?></td>
-                        <td>
-                            <span class="estado-empleado <?= $asignacion['estatus'] === 'completada' ? 'activo' : 'inactivo' ?>">
-                                <?= esc(ucfirst((string) $asignacion['estatus'])) ?>
+                        <td data-label="Fecha"><?= esc($asignacion['fecha'] ?? '—') ?></td>
+                        <td data-label="Vencimiento"><?= esc($asignacion['fecha_vencimiento'] ?? '—') ?></td>
+                        <td data-label="Prioridad"><?= esc(ucfirst((string) ($asignacion['prioridad'] ?? '—'))) ?></td>
+                        <td data-label="Estatus">
+                            <span class="estado-empleado <?= esc($claseEstado) ?>">
+                                <?= esc(ucfirst($estatus)) ?>
                             </span>
                         </td>
                     </tr>
@@ -70,6 +78,6 @@
                     </tr>
                 <?php endif; ?>
             </tbody>
-        </table>
+        </table></div>
     <?php endif; ?>
 <?= $this->endSection() ?>

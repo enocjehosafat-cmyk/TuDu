@@ -1421,7 +1421,6 @@ input[type="checkbox"], input[type="radio"] {
     z-index: 101; cursor: pointer;
     align-items: center; justify-content: center;
 }
-
 @media (max-width: 900px) {
     body { padding: 16px; padding-bottom: 90px; }
     
@@ -1438,4 +1437,334 @@ input[type="checkbox"], input[type="radio"] {
     
     .personal-estadisticas { grid-template-columns: 1fr; }
     .acciones { flex-wrap: wrap; }
+}
+/* Ajustes finos para móvil (iPhone SE, etc.) */
+@media (max-width: 600px) {
+    /* Dar margen a los lados para que el contenido no toque los bordes */
+    body { padding: 12px !important; padding-bottom: 90px !important; }
+    
+    /* Hacer que el formulario ocupe el 100% pero con margen interno */
+    .formulario, .detalle {
+        margin: 10px auto !important;
+        padding: 20px 15px !important;
+        width: calc(100% - 10px) !important;
+        border-radius: 12px;
+    }
+
+    /* Achicar un poco el título para que no se parta tanto */
+    .formulario h1 { font-size: 22px !important; text-align: center; }
+    
+    /* Que los inputs no se vean tan apretados */
+    .campo { margin-bottom: 18px !important; }
+    
+    /* Mover el botón hamburguesa un poco para que no tape los inputs */
+    .mobile-menu-toggle { bottom: 25px; right: 20px; }
+}
+/* =========================================
+   DISEÑO DE TABLAS COMO TARJETAS EN MÓVIL
+========================================= */
+@media (max-width: 900px) {
+    /* 1. Quitamos el contenedor con scroll y los bordes de tabla */
+    .table-responsive {
+        border: none !important;
+        overflow: visible !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    /* 2. Convertimos la tabla en un bloque flexible y eliminamos espacios fantasma */
+    .table-responsive table, 
+    .table-responsive thead, 
+    .table-responsive tbody, 
+    .table-responsive th, 
+    .table-responsive td, 
+    .table-responsive tr { 
+        display: block; 
+        width: 100%;
+        margin: 0 !important;
+        border: none; /* Quitamos cualquier borde residual de la tabla original */
+    }
+
+    /* EL TRUCO: El tbody (el contenedor de las filas) no debe tener fondo ni bordes */
+    .table-responsive tbody {
+        display: flex;
+        flex-direction: column;
+        gap: 15px; /* Espacio entre tarjetas */
+    }
+
+    /* 3. Ocultamos los encabezados de la tabla (Tarea, Fecha, etc.) */
+    .table-responsive thead tr { 
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+
+    /* 4. Diseñamos cada fila como una tarjeta */
+    .table-responsive tr { 
+        background: #ffffff !important;
+        border: 1px solid #1565c0 !important; 
+        border-radius: 12px;
+        padding: 15px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+
+    /* 5. Acomodamos cada celda */
+    .table-responsive td { 
+        border: none !important;
+        position: relative;
+        padding: 6px 0 !important; /* Menos espacio entre datos */
+        text-align: left;
+        font-size: 14px;
+    }
+
+    /* 6. Ponemos la etiqueta del encabezado al lado del dato */
+    .table-responsive td::before { 
+        content: attr(data-label); 
+        font-weight: bold;
+        color: #64748b;
+        display: inline-block;
+        width: 110px; /* Un poco más de ancho para que no se pegue el dato */
+        font-size: 13px;
+        vertical-align: top; /* Si el dato es largo, se alinea arriba */
+    }
+
+    /* 7. Hacemos que el título de la tarea resalte y ocupe toda la línea */
+    .table-responsive td:first-child {
+        font-size: 16px;
+        padding-bottom: 10px !important;
+        margin-bottom: 10px;
+        border-bottom: 1px dashed #cbd5e1 !important;
+    }
+    
+    .table-responsive td:first-child::before {
+        display: none; /* Ocultamos la etiqueta "Tarea", "Nombre" o "ID" */
+    }
+
+    /* 8. Ajustamos los botones de acción para que no se rompan */
+    .table-responsive .acciones {
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px dashed #cbd5e1;
+        display: flex;
+        flex-wrap: wrap; /* Permite que si no caben, bajen a la siguiente línea */
+        gap: 10px;
+    }
+
+    .table-responsive .acciones a, 
+    .table-responsive .acciones button,
+    .table-responsive .acciones form {
+        flex: 1; /* Hace que los botones se repartan el ancho */
+        min-width: 120px; /* Ancho mínimo para que no se aplasten */
+    }
+    
+    /* Asegurar que los formularios no rompan el flex */
+    .table-responsive .acciones form button {
+        width: 100%;
+    }
+
+    .table-responsive .acciones a, 
+    .table-responsive .acciones button {
+        flex: 1; /* Hace que el botón ocupe todo el ancho disponible */
+        text-align: center;
+        white-space: nowrap; /* Evita que el texto del botón se parta */
+        padding: 12px !important;
+        font-size: 14px;
+    }
+
+    /* Evitar que los estados se partan (Completada, Activo, etc.) */
+    .estado-empleado {
+        white-space: nowrap;
+        text-align: center;
+        display: inline-block;
+    }
+}
+
+/* ===== Fase 1: estado pendiente (amarillo) ===== */
+.estado-empleado.pendiente {
+    background-color: #fef9c3;
+    color: #854d0e;
+}
+/* =========================================
+   SWEETALERT2 CUSTOM STYLES (Toasts)
+========================================= */
+.swal2-toast.colored-toast {
+    background-color: #ffffff !important;
+    border-left: 5px solid #ccc;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+    border-radius: 8px !important;
+    padding: 16px 20px !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+}
+
+.swal2-toast.colored-toast .swal2-title {
+    color: #1f2937 !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    margin: 0 !important;
+    padding: 0 10px !important;
+    text-align: left !important;
+}
+
+/* Colores de borde izquierdo según el ícono */
+.swal2-toast.colored-toast:has(.swal2-icon-success) { border-left-color: #10b981 !important; }
+.swal2-toast.colored-toast:has(.swal2-icon-warning) { border-left-color: #f59e0b !important; }
+.swal2-toast.colored-toast:has(.swal2-icon-error) { border-left-color: #ef4444 !important; }
+
+/* Ajustar el ícono nativo de SweetAlert2 para que parezca el tuyo */
+.swal2-toast.colored-toast .swal2-icon {
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+    border-width: 2px !important;
+    margin: 0 !important;
+    color: #fff !important;
+}
+.swal2-toast.colored-toast .swal2-icon .swal2-icon-content {
+    font-size: 14px !important;
+}
+.swal2-toast.colored-toast .swal2-icon.swal2-success { background: #10b981; border-color: #10b981; }
+.swal2-toast.colored-toast .swal2-icon.swal2-warning { background: #f59e0b; border-color: #f59e0b; }
+.swal2-toast.colored-toast .swal2-icon.swal2-error { background: #ef4444; border-color: #ef4444; }
+
+/* Barra de progreso del timer */
+.swal2-toast.colored-toast .swal2-timer-progress-bar {
+    background: rgba(0,0,0,0.1) !important;
+}
+/* =========================================
+   SWEETALERT2 CUSTOM TOAST (Con íconos propios)
+========================================= */
+
+.swal2-toast.colored-toast {
+    background-color: #ffffff !important;
+    border-left: 5px solid #ccc !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+    border-radius: 8px !important;
+    padding: 16px 20px !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+    width: 350px !important;
+    max-width: 90vw !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+}
+
+/* Colores de borde izquierdo */
+.swal2-toast.colored-toast:has(.toast-icon-success) { border-left-color: #10b981 !important; }
+.swal2-toast.colored-toast:has(.toast-icon-warning) { border-left-color: #f59e0b !important; }
+.swal2-toast.colored-toast:has(.toast-icon-error)   { border-left-color: #ef4444 !important; }
+
+/* Texto */
+.swal2-toast.colored-toast .swal2-title {
+    color: #1f2937 !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    text-align: left !important;
+    line-height: 1.4 !important;
+}
+
+/* Nuestro ícono personalizado */
+.toast-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-weight: bold;
+    color: white;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+.toast-icon-success { background-color: #10b981; }
+.toast-icon-warning { background-color: #f59e0b; }
+.toast-icon-error   { background-color: #ef4444; }
+
+/* Botón de cerrar "X" */
+.swal2-toast.colored-toast .swal2-close {
+    color: #9ca3af !important;
+    font-size: 20px !important;
+    position: absolute !important;
+    right: 10px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    margin: 0 !important;
+}
+.swal2-toast.colored-toast .swal2-close:hover {
+    color: #4b5563 !important;
+}
+
+/* Ajuste para que el título no quede debajo de la "X" */
+.swal2-toast.colored-toast .swal2-html-container,
+.swal2-toast.colored-toast .swal2-title {
+    padding-right: 24px !important;
+}
+/* =========================================
+   ARREGLO DEL CHECKLIST EN MÓVIL
+========================================= */
+@media (max-width: 900px) {
+    /* Hacemos que la tabla del checklist siga siendo una tabla normal */
+    .table-responsive table.checklist-table,
+    .table-responsive table.checklist-table tbody,
+    .table-responsive table.checklist-table tr,
+    .table-responsive table.checklist-table td {
+        display: revert !important; /* Deshace el display: block de las tarjetas */
+        width: auto;
+        border: none !important;
+    }
+
+    .table-responsive table.checklist-table {
+        display: table !important;
+        width: 100% !important;
+    }
+
+    .table-responsive table.checklist-table thead {
+        display: table-header-group !important;
+    }
+
+    .table-responsive table.checklist-table tbody {
+        display: table-row-group !important;
+    }
+
+    .table-responsive table.checklist-table tr {
+        display: table-row !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .table-responsive table.checklist-table td {
+        display: table-cell !important;
+        padding: 12px 8px !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+    }
+
+    /* Ocultamos el "data-label" para que no se vea el texto "OK" o "Paso" encima del dato */
+    .table-responsive table.checklist-table td::before {
+        display: none !important;
+    }
+}
+/* Arreglo para el input de sugerencias (datalist) */
+input[list]::-webkit-calendar-picker-indicator {
+    display: none !important; /* Oculta la flecha negra fea en Chrome */
+}
+
+input[list] {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%231565c0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 40px !important;
+    cursor: pointer;
+}
+/* Color para el estado En Revisión */
+.estado-empleado.en_revision {
+    background-color: #e0f2fe;
+    color: #0284c7;
+}
+/* Color para el estado En Revisión */
+.estado-empleado.en_revision {
+    background-color: #e0f2fe !important;
+    color: #0284c7 !important;
 }

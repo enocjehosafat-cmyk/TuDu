@@ -55,4 +55,47 @@ class EmpleadoModel extends Model
 
         return $empleados;
     }
+
+    public function listarPaginado(int $empresaId, int $porPagina = 15): array
+    {
+        $builder = $this->db->table('empleados e')
+            ->select('e.*, u.username, u.active, u.last_active, ai.secret as email')
+            ->join('users u', 'u.id = e.usuario_id')
+            ->join('auth_identities ai', "ai.user_id = u.id AND ai.type = 'email_password'", 'left')
+            ->where('e.empresa_id', $empresaId)
+            ->where('u.deleted_at', null)
+            ->orderBy('e.nombre', 'ASC')
+            ->orderBy('e.apellidos', 'ASC');
+
+        $total = $builder->countAllResults(false);
+        $page  = service('request')->getGet('page_empleados') ?? 1;
+        $items = $builder->limit($porPagina, max(0, ((int) $page - 1) * $porPagina))
+            ->get()
+            ->getResultArray();
+
+        if ($items !== []) {
+            $grupos = $this->db->table('auth_groups_users')
+                ->select('user_id, group')
+                ->whereIn('user_id', array_column($items, 'usuario_id'))
+                ->get()
+                ->getResultArray();
+
+            $mapa = [];
+            foreach ($grupos as $grupo) {
+                $mapa[(int) $grupo['user_id']][] = $grupo['group'];
+            }
+
+            foreach ($items as &$empleado) {
+                $empleado['grupos'] = $mapa[(int) $empleado['usuario_id']] ?? [];
+            }
+            unset($empleado);
+        }
+
+        return [
+            'items' => $items,
+            'total' => $total,
+            'page'  => (int) $page,
+            'per'   => $porPagina,
+        ];
+    }
 }

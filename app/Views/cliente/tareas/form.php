@@ -16,18 +16,28 @@
             <?= csrf_field() ?>
 
             <div class="campo">
-                <label for="nombre">Nombre *</label>
-                <input type="text" name="nombre" id="nombre" value="<?= esc(old('nombre', $tarea['nombre'] ?? '')) ?>" maxlength="100" required>
+                <label for="nombre">Nombre de la tarea *</label>
+                <input 
+                    type="text" 
+                    name="nombre" 
+                    id="nombre" 
+                    value="<?= esc(old('nombre', $tarea['nombre'] ?? '')) ?>" 
+                    maxlength="100" 
+                    required 
+                    autocomplete="off"
+                    placeholder="Ej. Limpieza de baño, Barrer el piso..."
+                    style="width: 100%; padding: 12px; border: 1px solid #b8c7db; border-radius: 6px; font-size: 15px;"
+                >
             </div>
 
             <div class="campo">
                 <label for="descripcion">Descripción</label>
-                <textarea name="descripcion" id="descripcion" maxlength="2000" rows="3"><?= esc(old('descripcion', $tarea['descripcion'] ?? '')) ?></textarea>
+                <textarea name="descripcion" id="descripcion" maxlength="2000" rows="3" autocomplete="off"><?= esc(old('descripcion', $tarea['descripcion'] ?? '')) ?></textarea>
             </div>
 
             <div class="campo">
                 <label for="tiempo_estimado">Tiempo estimado (minutos)</label>
-                <input type="number" name="tiempo_estimado" id="tiempo_estimado" min="0" value="<?= esc(old('tiempo_estimado', $tarea['tiempo_estimado'] ?? '')) ?>">
+                <input type="number" name="tiempo_estimado" id="tiempo_estimado" min="0" value="<?= esc(old('tiempo_estimado', $tarea['tiempo_estimado'] ?? '')) ?>" autocomplete="off">
             </div>
 
             <div class="campo">
@@ -50,7 +60,7 @@
                 <div id="lista-actividades">
                     <?php foreach ($actividades as $act): ?>
                         <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-                            <input type="text" name="actividades[]" value="<?= esc($act) ?>" style="flex: 1;" placeholder="Ej. Barrer el piso">
+                            <input type="text" name="actividades[]" value="<?= esc($act) ?>" style="flex: 1;" placeholder="Ej. Barrer el piso" autocomplete="off">
                             <button type="button" class="boton-delete" onclick="this.parentElement.remove()">X</button>
                         </div>
                     <?php endforeach; ?>
@@ -67,7 +77,7 @@
         function agregarActividad() {
             const div = document.createElement('div');
             div.style = 'display: flex; gap: 8px; margin-bottom: 8px;';
-            div.innerHTML = '<input type="text" name="actividades[]" style="flex: 1;" placeholder="Nueva actividad..."><button type="button" class="boton-delete" onclick="this.parentElement.remove()">X</button>';
+            div.innerHTML = '<input type="text" name="actividades[]" style="flex: 1;" placeholder="Nueva actividad..." autocomplete="off"><button type="button" class="boton-delete" onclick="this.parentElement.remove()">X</button>';
             document.getElementById('lista-actividades').appendChild(div);
         }
     </script>

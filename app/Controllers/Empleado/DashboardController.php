@@ -15,11 +15,11 @@ class DashboardController extends BaseController
 
         if ($perfil === null) {
             return view('empleado/dashboard', [
-                'title'         => 'Panel de empleado',
-                'perfil'        => null,
-                'asignaciones'  => [],
-                'pendientes'    => 0,
-                'completadas'   => 0,
+                'title'        => 'Panel de empleado',
+                'perfil'       => null,
+                'asignaciones' => [],
+                'pendientes'   => 0,
+                'completadas'  => 0,
             ]);
         }
 
@@ -27,20 +27,27 @@ class DashboardController extends BaseController
             ->select('a.*, t.nombre as tarea, t.descripcion')
             ->join('tareas t', 't.id = a.tarea_id', 'left')
             ->where('a.empleado_id', $perfil['id'])
+            ->where('a.estatus !=', 'cancelada')
             ->orderBy('a.fecha', 'DESC')
             ->get()
             ->getResultArray();
 
-        $completadas = count(array_filter(
-            $asignaciones,
-            static fn (array $asignacion): bool => $asignacion['estatus'] === 'completada',
-        ));
+        $completadas = 0;
+        $pendientes  = 0;
+
+        foreach ($asignaciones as $a) {
+            if ($a['estatus'] === 'completada') {
+                $completadas++;
+            } elseif ($a['estatus'] === 'pendiente') {
+                $pendientes++;
+            }
+        }
 
         return view('empleado/dashboard', [
             'title'        => 'Panel de empleado',
             'perfil'       => $perfil,
             'asignaciones' => $asignaciones,
-            'pendientes'   => count($asignaciones) - $completadas,
+            'pendientes'   => $pendientes,
             'completadas'  => $completadas,
         ]);
     }

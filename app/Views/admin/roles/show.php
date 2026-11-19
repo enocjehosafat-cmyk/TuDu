@@ -48,21 +48,23 @@
         <tbody>
             <?php foreach ($usuarios as $usuario): ?>
                 <tr>
-                    <td><?= esc($usuario['username']) ?></td>
-                    <td>
+                    <td data-label="Usuario">
+                        <strong><?= esc($usuario['username']) ?></strong>
+                    </td>
+                    <td data-label="Nombre">
                         <?php if (! empty($usuario['nombre'])): ?>
                             <?= esc(trim($usuario['nombre'] . ' ' . ($usuario['apellidos'] ?? ''))) ?>
                         <?php else: ?>
                             <span style="color: #94a3b8;">Sin perfil</span>
                         <?php endif; ?>
                     </td>
-                    <td><?= esc($usuario['empresa_nombre'] ?? '—') ?></td>
-                    <td>
+                    <td data-label="Empresa"><?= esc($usuario['empresa_nombre'] ?? '—') ?></td>
+                    <td data-label="Estatus">
                         <span class="estado-empleado <?= (int) $usuario['active'] === 1 ? 'activo' : 'inactivo' ?>">
                             <?= (int) $usuario['active'] === 1 ? 'Activo' : 'Inactivo' ?>
                         </span>
                     </td>
-                    <td class="acciones">
+                    <td data-label="Opciones" class="acciones">
                         <form action="<?= site_url('admin/roles/remove-user/' . $slug . '/' . $usuario['id']) ?>" method="post" onsubmit="return confirm('¿Retirar este rol al usuario?');">
                             <?= csrf_field() ?>
                             <button class="boton-delete" type="submit">Retirar rol</button>
@@ -77,7 +79,7 @@
                 </tr>
             <?php endif; ?>
         </tbody>
-    </table>
+    </table></div>
 
     <div class="formulario">
         <h3>Agregar usuario al rol</h3>

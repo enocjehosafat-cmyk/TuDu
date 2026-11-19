@@ -5,6 +5,7 @@ namespace App\Controllers\Empleado;
 use App\Controllers\BaseController;
 use App\Models\AsignacionTareaModel;
 use App\Models\ChecklistTareaModel;
+use App\Models\EvidenciaAsignacionModel;
 use CodeIgniter\Exceptions\PageNotFoundException;
 
 class AsignacionController extends BaseController
@@ -12,12 +13,10 @@ class AsignacionController extends BaseController
     public function index()
     {
         $perfil = $this->perfilActual();
-
         $asignaciones = [];
 
         if ($perfil !== null) {
-            $asignaciones = (new AsignacionTareaModel())
-                ->listarDeEmpleado((int) $perfil['id']);
+            $asignaciones = (new AsignacionTareaModel())->listarDeEmpleado((int) $perfil['id']);
         }
 
         return view('empleado/asignaciones/index', [
@@ -30,17 +29,24 @@ class AsignacionController extends BaseController
     {
         $asignacion = $this->buscarAsignacion($id);
         $checklist  = (new ChecklistTareaModel())->listarPorAsignacion((int) $asignacion['id']);
+        $evidencias = (new EvidenciaAsignacionModel())->listarPorAsignacion((int) $asignacion['id']);
 
         return view('empleado/asignaciones/show', [
             'title'       => 'Detalle de asignación',
             'asignacion'  => $asignacion,
             'checklist'   => $checklist,
+            'evidencias'  => $evidencias,
+            'soloLectura' => $asignacion['estatus'] === 'cancelada',
         ]);
     }
 
     public function guardarChecklist($id)
     {
         $asignacion = $this->buscarAsignacion($id);
+        
+        if ($asignacion['estatus'] === 'cancelada') {
+            return redirect()->to(site_url('empleado/asignaciones'))->with('error', 'Esta asignación ha sido cancelada.');
+        }
 
         $model        = new ChecklistTareaModel();
         $marcados     = array_map('intval', (array) ($this->request->getPost('completada') ?? []));
@@ -75,25 +81,83 @@ class AsignacionController extends BaseController
         return redirect()->to(site_url('empleado/asignaciones/' . $asignacion['id']))->with('mensaje', $actualizados > 0 ? 'Checklist actualizado correctamente.' : 'Sin cambios en el checklist.');
     }
 
+    // NUEVO MÉTODO: Guardar Evidencia General (Hasta 5 fotos)
+        public function guardarEvidenciaGeneral($id)
+    {
+        // Forzar lectura de POST para evitar problemas con CSRF
+        $this->request->setGlobal('post', $this->request->getPost());
+
+        $asignacion = $this->buscarAsignacion($id);
+
+        if ($asignacion['estatus'] === 'cancelada' || $asignacion['estatus'] === 'completada') {
+            return $this->response->setJSON(['success' => false, 'message' => 'La asignación está cerrada.']);
+        }
+        // (Validación de móvil eliminada para permitir subir fotos desde PC)
+$model = new EvidenciaAsignacionModel();
+        
+        // Verificar límite de 5 fotos
+        $fotosActuales = $model->where('asignacion_id', $asignacion['id'])->countAllResults();
+        if ($fotosActuales >= 5) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Ya has subido el límite de 5 fotos.']);
+        }
+
+        $file = $this->request->getFile('foto');
+        if (!$file || !$file->isValid() || $file->hasMoved()) {
+            return $this->response->setJSON(['success' => false, 'message' => 'No se recibió ninguna foto válida.']);
+        }
+
+        // Guardar archivo físico
+        if (!is_dir(FCPATH . 'uploads/evidencias')) {
+            mkdir(FCPATH . 'uploads/evidencias', 0777, true);
+        }
+        $newName = $file->getRandomName();
+        $file->move(FCPATH . 'uploads/evidencias', $newName);
+
+        // Guardar en Base de Datos
+        $data = [
+            'asignacion_id' => $asignacion['id'],
+            'foto'          => $newName,
+            'latitud'       => $this->request->getPost('latitud') ?: null,
+            'longitud'      => $this->request->getPost('longitud') ?: null,
+        ];
+
+        if ($model->insert($data)) {
+            return $this->response->setJSON(['success' => true, 'message' => 'Evidencia guardada.']);
+        }
+
+        return $this->response->setJSON(['success' => false, 'message' => 'Error al guardar en la base de datos.']);
+    }
+
     public function completar($id)
     {
         $asignacion = $this->buscarAsignacion($id);
 
-        if ($asignacion['estatus'] === 'completada') {
-            return redirect()->to(site_url('empleado/asignaciones/' . $asignacion['id']))->with('error', 'Esta asignación ya está completada.');
+        if ($asignacion['estatus'] === 'completada' || $asignacion['estatus'] === 'en_revision') {
+            return redirect()->to(site_url('empleado/asignaciones/' . $asignacion['id']))->with('error', 'Esta asignación ya está en revisión o completada.');
         }
+        
+        if ($asignacion['estatus'] === 'cancelada') {
+            return redirect()->to(site_url('empleado/asignaciones/' . $asignacion['id']))->with('error', 'Esta asignación ha sido cancelada.');
+        }
+
+        // Aquí podrías validar que haya subido al menos 1 foto si lo deseas
 
         $model = new AsignacionTareaModel();
+        $model->update((int) $asignacion['id'], [
+            'estatus'          => 'en_revision',
+            'fecha_completada' => date('Y-m-d H:i:s'), // Guardamos la hora en que terminó
+        ]);
 
-        if (! $model->update((int) $asignacion['id'], ['estatus' => 'completada'])) {
-            log_message('error', 'Error al completar asignación: ' . implode('; ', $model->errors()));
+        $tareaNombre = $asignacion['tarea'] ?? 'Tarea eliminada';
+        service('audit')->log(
+            'enviar_revision', 
+            'asignacion', 
+            (int) $asignacion['id'], 
+            "Envió a revisión la tarea '{$tareaNombre}'"
+        );
 
-            return redirect()->to(site_url('empleado/asignaciones/' . $asignacion['id']))->with('error', 'No se pudo completar la asignación.');
-        }
-
-        return redirect()->to(site_url('empleado/asignaciones/' . $asignacion['id']))->with('mensaje', 'Asignación completada correctamente.');
+        return redirect()->to(site_url('empleado/asignaciones/' . $asignacion['id']))->with('success', 'Tarea enviada a revisión. Espera la aprobación de tu jefe.');
     }
-
     private function buscarAsignacion($id): array
     {
         $perfil = $this->perfilActual();

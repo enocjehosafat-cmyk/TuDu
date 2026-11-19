@@ -13,9 +13,14 @@ class EmpleadoController extends BaseController
 {
     public function index()
     {
+        $data = (new EmpleadoModel())->listarPaginado($this->empresaId());
+
         return view('cliente/empleados/index', [
             'title'     => 'Empleados',
-            'empleados' => (new EmpleadoModel())->listarPorEmpresa($this->empresaId()),
+            'empleados' => $data['items'],
+            'total'     => $data['total'],
+            'page'      => $data['page'],
+            'per'       => $data['per'],
         ]);
     }
 
@@ -184,14 +189,25 @@ class EmpleadoController extends BaseController
 
     private function verificarPermiso(User $usuario): void
     {
-        $roles = service('usuario')->rolesDe($usuario);
+        $roles          = service('usuario')->rolesDe($usuario);
+        $esSuperadmin   = in_array('superadmin', $roles, true);
+        $esCliente      = in_array('cliente', $roles, true);
+        $esEmpleado     = in_array('empleado', $roles, true);
+        $esMiMismo      = (int) $usuario->id === (int) auth()->id();
+        $actorEsCliente = $this->esCliente();
 
-        if (in_array('superadmin', $roles, true)) {
+        if ($esSuperadmin) {
             throw PageNotFoundException::forPageNotFound('Empleado no encontrado.');
         }
 
-        if (in_array('cliente', $roles, true) && (int) $usuario->id !== (int) auth()->id()) {
+        if ($esCliente && ! $esMiMismo) {
             throw PageNotFoundException::forPageNotFound('No puedes modificar a otro cliente.');
+        }
+
+        if (! $actorEsCliente) {
+            if (! $esMiMismo || ! $esEmpleado) {
+                throw PageNotFoundException::forPageNotFound('No tienes permiso para gestionar este empleado.');
+            }
         }
     }
 

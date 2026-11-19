@@ -8,7 +8,7 @@ class ChecklistTareaModel extends Model
 {
     protected $table         = 'checklist_tareas';
     protected $primaryKey    = 'id';
-    protected $allowedFields = ['asignacion_id', 'completada', 'fecha_completada', 'foto', 'notas', 'latitud', 'longitud'];
+   protected $allowedFields = ['asignacion_id', 'completada', 'fecha_completada', 'foto', 'notas', 'latitud', 'longitud'];
     protected $useTimestamps = true;
     protected $createdField  = 'created_at';
     protected $updatedField  = '';

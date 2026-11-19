@@ -11,7 +11,7 @@
         </a>
     </div>
 
-    <table>
+    <div class="table-responsive"><table>
         <thead>
             <tr>
                 <th>Nombre</th>
@@ -24,21 +24,21 @@
         <tbody>
             <?php foreach ($tareas as $tarea): ?>
                 <tr>
-                    <td>
+                    <td data-label="Nombre">
                         <strong><?= esc($tarea['nombre']) ?></strong>
                     </td>
-                    <td>
+                    <td data-label="Descripción">
                         <?= esc(mb_strimwidth((string) ($tarea['descripcion'] ?? ''), 0, 60, '…')) ?>
                     </td>
-                    <td>
+                    <td data-label="Tiempo">
                         <?= $tarea['tiempo_estimado'] !== null ? esc($tarea['tiempo_estimado'] . ' min') : '—' ?>
                     </td>
-                    <td>
+                    <td data-label="Estatus">
                         <span class="estado-empleado <?= (int) $tarea['estatus'] === 1 ? 'activo' : 'inactivo' ?>">
                             <?= (int) $tarea['estatus'] === 1 ? 'Activa' : 'Inactiva' ?>
                         </span>
                     </td>
-                    <td class="acciones">
+                    <td data-label="Opciones" class="acciones">
                         <a class="boton-edit" href="<?= site_url('cliente/tareas/edit/' . $tarea['id']) ?>">Editar</a>
                         <form action="<?= site_url('cliente/tareas/delete/' . $tarea['id']) ?>" method="post" onsubmit="return confirm('¿Eliminar esta tarea?');">
                             <?= csrf_field() ?>
@@ -54,5 +54,11 @@
                 </tr>
             <?php endif; ?>
         </tbody>
-    </table>
+    </table></div>
+
+    <?php if (isset($pager)): ?>
+        <div class="paginacion-contenedor">
+            <?= $pager->links('default', 'tudu') ?>
+        </div>
+    <?php endif; ?>
 <?= $this->endSection() ?>

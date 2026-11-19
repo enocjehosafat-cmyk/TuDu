@@ -10,9 +10,12 @@ class TareaController extends BaseController
 {
     public function index()
     {
+        $data = (new TareaModel())->listarPaginado($this->empresaId());
+
         return view('cliente/tareas/index', [
             'title'  => 'Tareas',
-            'tareas' => (new TareaModel())->listarPorEmpresa($this->empresaId()),
+            'tareas' => $data['items'],
+            'pager'  => $data['pager'],
         ]);
     }
 
@@ -29,6 +32,8 @@ class TareaController extends BaseController
 
         $model = new TareaModel();
         $datos = $this->datosFormulario();
+        $datos['empresa_id'] = $this->empresaId();
+
         $actividades = (array) ($this->request->getPost('actividades') ?? []);
 
         if (! $model->guardarTarea($datos, $actividades)) {
@@ -46,13 +51,16 @@ class TareaController extends BaseController
     public function update($id)
     {
         $tarea = $this->buscarTarea($id);
+
         if (! $this->validate($this->reglas())) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
         $model = new TareaModel();
         $datos = $this->datosFormulario();
-        $datos['id'] = $tarea['id'];
+        $datos['empresa_id'] = $this->empresaId();
+        $datos['id']         = (int) $tarea['id'];
+
         $actividades = (array) ($this->request->getPost('actividades') ?? []);
 
         if (! $model->guardarTarea($datos, $actividades)) {
@@ -62,12 +70,36 @@ class TareaController extends BaseController
         return redirect()->to(site_url('cliente/tareas'))->with('mensaje', 'Tarea actualizada correctamente.');
     }
 
-    public function delete($id)
-    {
-        $tarea = $this->buscarTarea($id);
-        (new TareaModel())->update((int) $tarea['id'], ['estatus' => 0]);
-        return redirect()->to(site_url('cliente/tareas'))->with('mensaje', 'Tarea eliminada correctamente.');
+public function delete($id)
+{
+    $tarea = $this->buscarTarea($id);
+    $model = new TareaModel();
+
+    $db = db_connect();
+    $db->transBegin();
+
+    try {
+        // Soft-delete de la tarea
+        $model->update((int) $tarea['id'], ['estatus' => 0]);
+
+        // Solo cancelar las asignaciones pendientes.
+        // Las completadas conservan su estatus para el historial.
+        db_connect()->table('asignaciones_tareas')
+            ->where('tarea_id', $tarea['id'])
+            ->where('estatus', 'pendiente')
+            ->update(['estatus' => 'cancelada']);
+
+        $db->transCommit();
+    } catch (\Throwable $e) {
+        $db->transRollback();
+        log_message('error', 'Error al desactivar tarea: ' . $e->getMessage());
+
+        return redirect()->back()->with('error', 'No se pudo desactivar la tarea.');
     }
+
+    return redirect()->to(site_url('cliente/tareas'))
+        ->with('mensaje', 'Tarea desactivada. Las asignaciones completadas se conservan en el historial.');
+}
 
     private function buscarTarea($id): array
     {
@@ -75,6 +107,7 @@ class TareaController extends BaseController
         if ($tarea === null) {
             throw PageNotFoundException::forPageNotFound('Tarea no encontrada.');
         }
+
         return $tarea;
     }
 

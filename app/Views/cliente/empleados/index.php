@@ -11,7 +11,7 @@
         </a>
     </div>
 
-    <table>
+    <div class="table-responsive"><table>
         <thead>
             <tr>
                 <th>Nombre</th>
@@ -25,16 +25,18 @@
         <tbody>
             <?php foreach ($empleados as $empleado): ?>
                 <tr>
-                    <td><?= esc(trim($empleado['nombre'] . ' ' . $empleado['apellidos'])) ?></td>
-                    <td><?= esc($empleado['username'] ?? '—') ?></td>
-                    <td><?= esc($empleado['email'] ?? '—') ?></td>
-                    <td><?= esc($empleado['telefono'] ?? '—') ?></td>
-                    <td>
+                    <td data-label="Nombre">
+                        <strong><?= esc(trim($empleado['nombre'] . ' ' . $empleado['apellidos'])) ?></strong>
+                    </td>
+                    <td data-label="Usuario"><?= esc($empleado['username'] ?? '—') ?></td>
+                    <td data-label="Correo"><?= esc($empleado['email'] ?? '—') ?></td>
+                    <td data-label="Teléfono"><?= esc($empleado['telefono'] ?? '—') ?></td>
+                    <td data-label="Estatus">
                         <span class="estado-empleado <?= (int) $empleado['estatus'] === 1 ? 'activo' : 'inactivo' ?>">
                             <?= (int) $empleado['estatus'] === 1 ? 'Activo' : 'Inactivo' ?>
                         </span>
                     </td>
-                    <td class="acciones">
+                    <td data-label="Opciones" class="acciones">
                         <a class="boton-edit" href="<?= site_url('cliente/empleados/edit/' . $empleado['id']) ?>">Editar</a>
                         <?php if ((int) $empleado['usuario_id'] !== (int) auth()->id()): ?>
                             <form action="<?= site_url('cliente/empleados/delete/' . $empleado['id']) ?>" method="post" onsubmit="return confirm('¿Eliminar este empleado?');">
@@ -52,5 +54,11 @@
                 </tr>
             <?php endif; ?>
         </tbody>
-    </table>
+    </table></div>
+
+    <?php if (isset($pager)): ?>
+        <div class="paginacion-contenedor">
+            <?= $pager->links('default', 'tudu') ?>
+        </div>
+    <?php endif; ?>
 <?= $this->endSection() ?>

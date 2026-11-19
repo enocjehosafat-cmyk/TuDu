@@ -24,5 +24,13 @@ class Services extends BaseService
         }
 
         return new RolService();
+    } 
+    public static function audit(bool $getShared = true): \App\Services\AuditService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('audit');
+        }
+
+        return new \App\Services\AuditService();
     }
 }

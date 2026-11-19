@@ -8,7 +8,7 @@
         </div>
     </div>
 
-    <table>
+    <div class="table-responsive"><table>
         <thead>
             <tr>
                 <th>Tarea</th>
@@ -21,23 +21,39 @@
         </thead>
         <tbody>
             <?php foreach ($asignaciones as $asignacion): ?>
+                <?php
+                    $estatus          = $asignacion['estatus'] ?? 'pendiente';
+                    $claseEstado      = match ($estatus) {
+                        'completada'  => 'activo',
+                        'cancelada'   => 'inactivo',
+                        'en_revision' => 'en_revision',
+                        default       => 'pendiente',
+                    };
+                    $textoEstatus     = ucfirst(str_replace('_', ' ', $estatus));
+                    $tareaDesactivada = (int) ($asignacion['tarea_estatus'] ?? 1) === 0;
+                ?>
                 <tr>
-                    <td>
+                    <td data-label="Tarea">
                         <strong><?= esc($asignacion['tarea'] ?? 'Tarea eliminada') ?></strong>
                         <?php if (! empty($asignacion['descripcion'])): ?>
                             <br><small><?= esc(mb_strimwidth((string) $asignacion['descripcion'], 0, 60, '…')) ?></small>
                         <?php endif; ?>
                     </td>
-                    <td><?= esc($asignacion['fecha'] ?? '—') ?></td>
-                    <td><?= esc($asignacion['fecha_vencimiento'] ?? '—') ?></td>
-                    <td><?= esc(ucfirst((string) ($asignacion['prioridad'] ?? '—'))) ?></td>
-                    <td>
-                        <span class="estado-empleado <?= $asignacion['estatus'] === 'completada' ? 'activo' : 'inactivo' ?>">
-                            <?= esc(ucfirst((string) $asignacion['estatus'])) ?>
+                    <td data-label="Fecha"><?= esc($asignacion['fecha'] ?? '—') ?></td>
+                    <td data-label="Vencimiento"><?= esc($asignacion['fecha_vencimiento'] ?? '—') ?></td>
+                    <td data-label="Prioridad"><?= esc(ucfirst((string) ($asignacion['prioridad'] ?? '—'))) ?></td>
+                    <td data-label="Estatus">
+                        <span class="estado-empleado <?= esc($claseEstado) ?>">
+                            <?= esc($textoEstatus) ?>
                         </span>
+                        <?php if ($tareaDesactivada): ?>
+                            <br><small style="color: #94a3b8;">(Tarea desactivada)</small>
+                        <?php endif; ?>
                     </td>
-                    <td class="acciones">
-                        <a class="boton-edit" href="<?= site_url('empleado/asignaciones/' . $asignacion['id']) ?>">Ver detalle</a>
+                    <td data-label="Opciones" class="acciones">
+                        <a class="boton-edit" href="<?= site_url('empleado/asignaciones/' . $asignacion['id']) ?>">
+                            <?= $estatus === 'cancelada' ? 'Ver historial' : 'Ver detalle' ?>
+                        </a>
                     </td>
                 </tr>
             <?php endforeach; ?>
@@ -48,5 +64,5 @@
                 </tr>
             <?php endif; ?>
         </tbody>
-    </table>
+    </table></div>
 <?= $this->endSection() ?>
