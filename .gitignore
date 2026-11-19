@@ -129,3 +129,15 @@ _modules/*
 # Generated analysis files
 #-------------------------
 repomix-output.xml
+# Copias de seguridad
+.backup-*/
+*.bak
+*.ps1
+
+# Subidas de usuarios
+public/uploads/evidencias/*
+!public/uploads/evidencias/index.html
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
