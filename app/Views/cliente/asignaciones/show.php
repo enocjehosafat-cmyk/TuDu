@@ -44,7 +44,7 @@
                 $clase = match ($estatus) {
                     'completada'  => 'activo',
                     'cancelada'   => 'inactivo',
-                    'en_revision' => 'en_revision', // <-- NUEVO COLOR
+                    'en_revision' => 'en_revision',
                     default       => 'pendiente',
                 };
             ?>
@@ -69,44 +69,63 @@
             </div>
         <?php endif; ?>
 
-        <!-- Galería de Evidencias -->
-        <?php if (!empty($evidencias)): ?>
-            <div style="margin-top: 25px; border-top: 1px solid #e2e8f0; padding-top: 20px;">
-                <label>Evidencias del Empleado (<?= count($evidencias) ?>/5)</label>
-                <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
-                    <?php foreach ($evidencias as $ev): ?>
-                        <div style="position: relative;">
-                            <a href="<?= base_url('uploads/evidencias/' . $ev['foto']) ?>" target="_blank">
-                                <img src="<?= base_url('uploads/evidencias/' . $ev['foto']) ?>" style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px; border: 1px solid #cbd5e1; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                            </a>
-                            <?php if (!empty($ev['latitud'])): ?>
-                                <div style="text-align: center; font-size: 11px; margin-top: 4px;">
-                                    <a href="https://www.google.com/maps?q=<?= $ev['latitud'] ?>,<?= $ev['longitud'] ?>" target="_blank" style="color: #15803d; text-decoration: none; font-weight: bold;">📍 Maps</a>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-        <?php else: ?>
-            <div style="margin-top: 25px; border-top: 1px solid #e2e8f0; padding-top: 20px;">
-                <label>Evidencias del Empleado</label>
-                <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">El empleado aún no ha subido fotos.</p>
-            </div>
-        <?php endif; ?>
+        <!-- Llamamos a la vista compartida -->
+        <?= view('compartido/evidencias', [
+            'asignacion' => $asignacion, 
+            'evidencias' => $evidencias, 
+            'esEmpleado' => false, 
+            'soloLectura' => false
+        ]) ?>
 
         <!-- Botones de Aprobación (Solo si está en revisión) -->
         <?php if ($asignacion['estatus'] === 'en_revision'): ?>
             <div style="margin-top: 30px; padding-top: 20px; border-top: 1px dashed #cbd5e1; display: flex; gap: 15px;">
-                <form action="<?= site_url('cliente/asignaciones/rechazar/' . $asignacion['id']) ?>" method="post" style="flex: 1;">
+                <form id="form-rechazar" action="<?= site_url('cliente/asignaciones/rechazar/' . $asignacion['id']) ?>" method="post" style="flex: 1;">
                     <?= csrf_field() ?>
-                    <button class="boton-delete" type="submit" style="width: 100%; padding: 12px;" onclick="return confirm('¿Rechazar esta tarea? El empleado tendrá que hacerla de nuevo.');">Rechazar Tarea</button>
+                    <button type="button" class="boton-delete" onclick="confirmarRechazo()" style="width: 100%; padding: 12px;">Rechazar Tarea</button>
                 </form>
-                <form action="<?= site_url('cliente/asignaciones/aprobar/' . $asignacion['id']) ?>" method="post" style="flex: 1;">
+                
+                <form id="form-aprobar" action="<?= site_url('cliente/asignaciones/aprobar/' . $asignacion['id']) ?>" method="post" style="flex: 1;">
                     <?= csrf_field() ?>
-                    <button class="boton-crear" type="submit" style="width: 100%; padding: 12px; background-color: #15803d;">Aprobar y Completar</button>
+                    <button type="button" class="boton-crear" onclick="confirmarAprobacion()" style="width: 100%; padding: 12px; background-color: #15803d;">Aprobar y Completar</button>
                 </form>
             </div>
+
+            <script>
+                function confirmarAprobacion() {
+                    Swal.fire({
+                        title: '¿Aprobar esta tarea?',
+                        text: "La tarea se marcará como completada y el empleado será notificado.",
+                        icon: 'success',
+                        showCancelButton: true,
+                        confirmButtonColor: '#15803d',
+                        cancelButtonColor: '#64748b',
+                        confirmButtonText: 'Sí, aprobar',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            document.getElementById('form-aprobar').submit();
+                        }
+                    });
+                }
+
+                function confirmarRechazo() {
+                    Swal.fire({
+                        title: '¿Rechazar esta tarea?',
+                        text: "El empleado tendrá que realizarla de nuevo. Esta acción quedará registrada.",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc2626',
+                        cancelButtonColor: '#64748b',
+                        confirmButtonText: 'Sí, rechazar',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            document.getElementById('form-rechazar').submit();
+                        }
+                    });
+                }
+            </script>
         <?php endif; ?>
 
         <?php if (! empty($asignacion['tarea_estatus']) && $asignacion['tarea_estatus'] == 0): ?>

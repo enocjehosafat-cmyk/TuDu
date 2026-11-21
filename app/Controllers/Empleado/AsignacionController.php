@@ -102,8 +102,15 @@ $model = new EvidenciaAsignacionModel();
         }
 
         $file = $this->request->getFile('foto');
-        if (!$file || !$file->isValid() || $file->hasMoved()) {
-            return $this->response->setJSON(['success' => false, 'message' => 'No se recibió ninguna foto válida.']);
+        
+        // Validar que el archivo exista y no tenga errores de subida
+        if (!$file || !$file->isValid()) {
+            return $this->response->setJSON(['success' => false, 'message' => 'No se recibió la foto o hubo un error en la subida.']);
+        }
+
+        // Validar que sea una imagen real (evita que suban archivos falsos)
+        if (!in_array($file->getMimeType(), ['image/jpeg', 'image/png', 'image/webp', 'image/heic'])) {
+            return $this->response->setJSON(['success' => false, 'message' => 'El archivo no es una imagen válida.']);
         }
 
         // Guardar archivo físico
@@ -127,6 +134,41 @@ $model = new EvidenciaAsignacionModel();
 
         return $this->response->setJSON(['success' => false, 'message' => 'Error al guardar en la base de datos.']);
     }
+        public function eliminarEvidencia($asignacionId, $evidenciaId)
+    {
+        $asignacion = $this->buscarAsignacion($asignacionId);
+
+        if ($asignacion['estatus'] === 'cancelada' || $asignacion['estatus'] === 'completada' || $asignacion['estatus'] === 'en_revision') {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['success' => false, 'message' => 'No puedes modificar evidencias en este estado.']);
+            }
+            return redirect()->to(site_url('empleado/asignaciones/' . $asignacionId))->with('error', 'No puedes modificar evidencias en este estado.');
+        }
+
+        $model = new EvidenciaAsignacionModel();
+        $evidencia = $model->find($evidenciaId);
+
+        if (!$evidencia || (int)$evidencia['asignacion_id'] !== (int)$asignacionId) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['success' => false, 'message' => 'Evidencia no encontrada.']);
+            }
+            return redirect()->to(site_url('empleado/asignaciones/' . $asignacionId))->with('error', 'Evidencia no encontrada.');
+        }
+
+        $rutaArchivo = FCPATH . 'uploads/evidencias/' . $evidencia['foto'];
+        if (file_exists($rutaArchivo)) {
+            unlink($rutaArchivo);
+        }
+
+        $model->delete($evidenciaId);
+
+        if (! $this->request->isAJAX()) {
+            return redirect()->to(site_url('empleado/asignaciones/' . $asignacionId))->with('success', 'Foto eliminada correctamente.');
+        }
+
+        return $this->response->setJSON(['success' => true, 'message' => 'Foto eliminada correctamente.']);
+    }
+
 
     public function completar($id)
     {
@@ -140,7 +182,12 @@ $model = new EvidenciaAsignacionModel();
             return redirect()->to(site_url('empleado/asignaciones/' . $asignacion['id']))->with('error', 'Esta asignación ha sido cancelada.');
         }
 
-        // Aquí podrías validar que haya subido al menos 1 foto si lo deseas
+        // NUEVA VALIDACIÓN: Verificar que tenga exactamente 5 fotos
+        $totalFotos = (new \App\Models\EvidenciaAsignacionModel())->where('asignacion_id', $asignacion['id'])->countAllResults();
+        
+        if ($totalFotos < 5) {
+            return redirect()->to(site_url('empleado/asignaciones/' . $asignacion['id']))->with('error', 'No puedes enviar a revisión sin antes subir las 5 fotos obligatorias. Llevas ' . $totalFotos . ' de 5.');
+        }
 
         $model = new AsignacionTareaModel();
         $model->update((int) $asignacion['id'], [
@@ -157,8 +204,7 @@ $model = new EvidenciaAsignacionModel();
         );
 
         return redirect()->to(site_url('empleado/asignaciones/' . $asignacion['id']))->with('success', 'Tarea enviada a revisión. Espera la aprobación de tu jefe.');
-    }
-    private function buscarAsignacion($id): array
+    }    private function buscarAsignacion($id): array
     {
         $perfil = $this->perfilActual();
 
@@ -176,3 +222,4 @@ $model = new EvidenciaAsignacionModel();
         return $asignacion;
     }
 }
+

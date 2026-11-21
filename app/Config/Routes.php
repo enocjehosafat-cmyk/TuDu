@@ -87,11 +87,13 @@ $routes->group('cliente', ['filter' => ['permission:cliente.access', 'empresa-ac
     });
 });
 
-$routes->group('empleado', ['filter' => ['permission:empleado.access', 'empresa-activa']], static function ($routes): void {    $routes->get('dashboard', 'Empleado\DashboardController::index');
+$routes->group('empleado', ['filter' => ['permission:empleado.access', 'empresa-activa']], static function ($routes): void {    
+    $routes->get('dashboard', 'Empleado\DashboardController::index');
 
     $routes->get('asignaciones', 'Empleado\AsignacionController::index');
     $routes->get('asignaciones/(:num)', 'Empleado\AsignacionController::show/$1');
     $routes->post('asignaciones/(:num)/checklist', 'Empleado\AsignacionController::guardarChecklist/$1');
     $routes->post('asignaciones/(:num)/completar', 'Empleado\AsignacionController::completar/$1');
-        $routes->post('asignaciones/(:num)/evidencia', 'Empleado\AsignacionController::guardarEvidenciaGeneral/$1');
+    $routes->post('asignaciones/(:num)/evidencia', 'Empleado\AsignacionController::guardarEvidenciaGeneral/$1');
+    $routes->post('asignaciones/(:num)/evidencia/eliminar/(:num)', 'Empleado\AsignacionController::eliminarEvidencia/$1/$2');
 });
